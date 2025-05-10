@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 from apify_client import ApifyClient
+from ../utils import save_json_to_file
 
 # Load environment variables
 load_dotenv()
