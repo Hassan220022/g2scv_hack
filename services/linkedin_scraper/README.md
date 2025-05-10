@@ -1,74 +1,152 @@
-# LinkedIn Profile Scraper API (with Apify Integration)
+# LinkedIn Scraper API
 
-This project provides a FastAPI-based backend to scrape LinkedIn public profiles using the Apify platform, and to serve the data to a client (such as a Flutter app) in a structured JSON format. Data is deleted from Apify storage only after you confirm it has been saved locally.
+A FastAPI-based service for scraping LinkedIn profiles using Apify and storing the raw data in a designated bucket directory.
 
 ## Features
-- **Scrape LinkedIn profiles** using Apify's LinkedIn Actor
-- **Two-step data handling**: data is deleted from Apify only after the client confirms receipt
-- **Flutter/mobile-ready** JSON response
-- **CORS enabled** for easy integration with web and mobile apps
-- **Secure**: API keys are stored in `.env` and not committed to version control
 
-## API Endpoints
+- Scrape LinkedIn profiles using Apify's advanced scraping actor
+- Save raw profile data as JSON files to a bucket directory
+- Simple API with a single endpoint for profile scraping
+- FastAPI server with CORS support
 
-### 1. Scrape LinkedIn Profile
-`POST /scrape-linkedin`
+## Prerequisites
 
-Request body:
+- Python 3.8+
+- Apify API token (set in `.env` file)
+- Properly configured `.env` file with required credentials
+
+## Setup
+
+1. Make sure you have the following environment variables in your `.env` file:
+
+```
+APIFY_WEB_API_KEY=your_apify_api_key
+APIFY_ACTOR_ID=2SyF0bVxmgGr8IVCZ
+```
+
+2. Install the required dependencies:
+
+```bash
+pip install fastapi uvicorn apify-client python-dotenv
+```
+
+3. Start the FastAPI server:
+
+```bash
+cd services/linkedin_scraper
+python -m uvicorn linkedin_api:app --reload --host 0.0.0.0 --port 8004
+```
+
+## API Usage
+
+The API provides a single endpoint for scraping LinkedIn profiles:
+
+### POST /scrape-linkedin
+
+Scrapes a LinkedIn profile and saves the raw data to the bucket directory.
+
+**Request Body:**
+
 ```json
 {
-  "url": "https://www.linkedin.com/in/mikawi/"
+  "url": "https://www.linkedin.com/in/profile-identifier"
 }
 ```
 
-Response:
+**Response:**
+
 ```json
 {
-  "data": [ ...profileData... ],
-  "run_id": "...",
-  "dataset_id": "..."
+  "success": true,
+  "message": "LinkedIn data saved successfully",
+  "run_id": "apify_run_id",
+  "dataset_id": "apify_dataset_id",
+  "saved_to": "/path/to/bucket/linkedin_profile_identifier_timestamp.json",
+  "item_count": 1
 }
 ```
 
-### 2. Confirm Data Receipt & Delete from Apify
-`POST /confirm-data-receipt`
+## Example Usage
 
-Request body:
-```json
-{
-  "run_id": "...",
-  "dataset_id": "..."
+### Using Python Requests
+
+```python
+import requests
+
+# API endpoint
+api_url = "http://localhost:8004/scrape-linkedin"
+
+# LinkedIn profile URL to scrape
+profile_url = "https://www.linkedin.com/in/williamhgates"
+
+# Request payload
+payload = {
+    "url": profile_url
 }
+
+# Make the API request
+response = requests.post(api_url, json=payload)
+
+# Check if the request was successful
+if response.status_code == 200:
+    result = response.json()
+    print(f"Profile data saved to: {result.get('saved_to')}")
+else:
+    print(f"Error: {response.text}")
 ```
 
-Response:
-```json
-{
-  "message": "Data successfully deleted from Apify"
-}
+### Using cURL
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8004/scrape-linkedin' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://www.linkedin.com/in/williamhgates"
+  }'
 ```
 
-## Quickstart
+## Testing the API
 
-1. **Install dependencies**
-   ```sh
-   pip install -r requirements.txt
-   ```
-2. **Set your Apify API key** in `.env`:
-   ```env
-   APIFY_WEB_API_KEY=your_apify_token_here
-   ```
-3. **Run the API**
-   ```sh
-   uvicorn linkedin_api:app --reload --port 8004
-   ```
-4. **Use the API** from your Flutter/mobile/web app as described above.
+The repository includes a test script (`test_scraper.py`) to verify API functionality:
 
-## Notes
-- The API will only delete Apify data after you explicitly confirm receipt.
-- You can view your Apify runs and datasets here (for debugging):
-  <!-- supreme_coder/linkedin-profile-scraper -->
+```bash
+python test_scraper.py
+```
 
-## Security
-- **Never commit your `.env` file or API keys to version control.**
-- The `.gitignore` is set up to ignore `.env` and other sensitive files.
+## Data Format
+
+The raw LinkedIn profile data is saved as a JSON file with the following format:
+
+```json
+[
+  {
+    "linkedinUrl": "https://www.linkedin.com/in/profile-id",
+    "firstName": "First",
+    "lastName": "Last",
+    "fullName": "First Last",
+    "headline": "Professional Headline",
+    "connections": 500,
+    "followers": 1000,
+    "email": "example@company.com",
+    "jobTitle": "Job Title",
+    "companyName": "Company Name",
+    "experiences": [...],
+    "educations": [...],
+    "skills": [...],
+    ...
+  }
+]
+```
+
+## Important Notes
+
+- The API uses Apify's LinkedIn scraper actor which has usage limits based on your Apify account
+- Scraped profile data is stored in the bucket directory at: `/Users/mikawi/Developer/hackathon/g2scv_n/bucket/`
+- Each profile is saved with a unique filename format: `linkedin_profile_{profile_id}_{timestamp}.json`
+- Make sure your Apify API token is valid and has sufficient credits
+- Respect LinkedIn's terms of service when using this scraper
+
+## License
+
+MIT
