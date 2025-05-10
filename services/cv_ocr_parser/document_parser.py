@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Document Parser - Extract text, metadata, and hyperlinks from various file formats.
-Supports PDF, Word Documents, Images, and more.
+CV Document Parser - Extract structured information, text, metadata, and hyperlinks from various CV formats.
+Supports PDF, Word Documents (docx), Images (using OCR), and more.
+Extracted data is saved in a structured JSON format in the specified bucket directory.
 """
 
 import os
 import re
 import json
+import uuid
 import logging
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple
@@ -26,6 +28,15 @@ from docx import Document as DocxDocument
 # File type detection
 import magic
 
+# NLP for entity extraction
+import spacy
+try:
+    nlp = spacy.load('en_core_web_sm')
+except:
+    # Fallback for when spaCy model isn't available
+    nlp = None
+    logging.warning("spaCy model not available. Entity extraction will be limited.")
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -33,10 +44,21 @@ logger = logging.getLogger(__name__)
 # Constants
 URL_PATTERN = r'\b(?:https?://|www\.)\S+\b'
 EMAIL_PATTERN = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+PHONE_PATTERN = r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
+LINKEDIN_PATTERN = r'(?:linkedin\.com/(?:in|company)/[\w-]+)'
+GITHUB_PATTERN = r'(?:github\.com/[\w-]+)'
+
+# CV sections - common section titles in resumes/CVs
+CV_SECTIONS = [
+    'education', 'experience', 'work experience', 'employment', 'skills', 
+    'technical skills', 'projects', 'certifications', 'achievements',
+    'languages', 'summary', 'objective', 'professional summary', 'profile',
+    'publications', 'references', 'volunteer', 'interests', 'awards'
+]
 
 
 class DocumentParser:
-    """Main document parser class that handles different file types."""
+    """Main document parser class that handles different CV file types and extracts structured information."""
     
     def __init__(self, file_path: str):
         """Initialize with file path."""
@@ -60,6 +82,7 @@ class DocumentParser:
             'image/png': self._parse_image,
             'image/tiff': self._parse_image,
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': self._parse_docx,
+            'text/plain': self._parse_text,
         }
         
         # Check by extension as fallback
@@ -71,6 +94,7 @@ class DocumentParser:
             '.tiff': self._parse_image,
             '.tif': self._parse_image,
             '.docx': self._parse_docx,
+            '.txt': self._parse_text,
         }
         
         parser = mime_mapping.get(self.mime_type)
@@ -117,6 +141,36 @@ class DocumentParser:
         if not text:
             return []
         return list(set(re.findall(EMAIL_PATTERN, text)))
+    
+    def _extract_phones(self, text: str) -> List[str]:
+        """Extract phone numbers from text."""
+        if not text:
+            return []
+        return list(set(re.findall(PHONE_PATTERN, text)))
+    
+    def _extract_linkedin(self, text: str) -> List[str]:
+        """Extract LinkedIn profiles from text."""
+        if not text:
+            return []
+        profiles = re.findall(LINKEDIN_PATTERN, text)
+        # Also check in the URLs
+        urls = self._extract_urls(text)
+        for url in urls:
+            if 'linkedin.com/' in url:
+                profiles.append(url)
+        return list(set(profiles))
+    
+    def _extract_github(self, text: str) -> List[str]:
+        """Extract GitHub profiles from text."""
+        if not text:
+            return []
+        profiles = re.findall(GITHUB_PATTERN, text)
+        # Also check in the URLs
+        urls = self._extract_urls(text)
+        for url in urls:
+            if 'github.com/' in url:
+                profiles.append(url)
+        return list(set(profiles))
     
     def _get_exif_metadata(self) -> Dict[str, Any]:
         """Extract EXIF metadata using Pillow."""
@@ -222,6 +276,40 @@ class DocumentParser:
         
         return result
     
+    def _parse_text(self) -> Dict[str, Any]:
+        """Parse plain text files."""
+        result = {
+            "type": "text",
+            "content": "",
+            "metadata": {
+                "filename": self.file_path.name,
+                "extension": self.file_path.suffix,
+                "size": self.file_path.stat().st_size
+            },
+            "paragraphs": [],
+            "hyperlinks": [],
+        }
+        
+        try:
+            # Read the text file
+            with open(self.file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            result["content"] = content
+            
+            # Split into paragraphs (separated by blank lines)
+            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+            result["paragraphs"] = paragraphs
+            
+            # Extract URLs
+            result["hyperlinks"] = self._extract_urls(content)
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error parsing text file: {str(e)}")
+            result["error"] = str(e)
+            return result
+    
     def _parse_image(self) -> Dict[str, Any]:
         """Parse image files using OCR."""
         result = {
@@ -314,42 +402,163 @@ class DocumentParser:
         return result
 
 
-def parse_document(file_path: str, output_path: Optional[str] = None) -> Dict[str, Any]:
+    def _extract_entities(self, text: str) -> Dict[str, List[str]]:
+        """Extract named entities from text using spaCy if available."""
+        entities = {
+            "PERSON": [],
+            "ORG": [],
+            "GPE": [],  # Geo-Political Entity (cities, countries)
+            "DATE": [],
+            "DEGREE": []
+        }
+        
+        if not text or not nlp:
+            return entities
+            
+        doc = nlp(text)
+        
+        # Extract standard named entities
+        for ent in doc.ents:
+            if ent.label_ in entities:
+                entities[ent.label_].append(ent.text)
+                
+        # Look for educational degrees with pattern matching
+        degree_patterns = [
+            r'\b(?:Bachelor|Master|Doctor|PhD|BSc|BA|MS|MSc|MBA|MD|B\.S|M\.S|Ph\.D)\b[\s\w]*(?:degree|of Science|of Arts|of Business|in [\w\s]+)'
+        ]
+        
+        for pattern in degree_patterns:
+            degrees = re.findall(pattern, text, re.IGNORECASE)
+            if degrees:
+                entities["DEGREE"].extend(degrees)
+                
+        # Deduplicate
+        for key in entities:
+            entities[key] = list(set(entities[key]))
+            
+        return entities
+    
+    def _extract_cv_sections(self, text: str) -> Dict[str, str]:
+        """Attempt to extract common CV sections based on headings."""
+        sections = {}
+        lines = text.split('\n')
+        current_section = None
+        section_content = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Check if this line looks like a section heading
+            is_heading = False
+            line_lower = line.lower()
+            
+            for section_name in CV_SECTIONS:
+                if section_name in line_lower and len(line) < 50:  # Avoid matching long lines
+                    # Found a new section
+                    if current_section:
+                        sections[current_section] = '\n'.join(section_content)
+                    current_section = line
+                    section_content = []
+                    is_heading = True
+                    break
+            
+            if not is_heading and current_section:
+                section_content.append(line)
+        
+        # Add the last section
+        if current_section:
+            sections[current_section] = '\n'.join(section_content)
+            
+        return sections
+
+
+def parse_document(file_path: str, output_path: Optional[str] = None, bucket_dir: Optional[str] = None) -> Dict[str, Any]:
     """
-    Parse document and optionally save to JSON file.
+    Parse CV document and save to JSON file in the specified bucket directory.
     
     Args:
-        file_path: Path to the document file
-        output_path: Optional path to save JSON output
+        file_path: Path to the CV document file
+        output_path: Optional explicit path to save JSON output
+        bucket_dir: Optional bucket directory path to save output
         
     Returns:
-        Dictionary with extracted data
+        Dictionary with extracted structured CV data
     """
     parser = DocumentParser(file_path)
     result = parser.parse()
     
-    if output_path:
-        output_file = Path(output_path)
-        if output_file.suffix != '.json':
-            output_file = output_file.with_suffix('.json')
-            
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, indent=2, ensure_ascii=False)
-            logger.info(f"Output saved to {output_file}")
+    # Extract additional CV-specific information
+    text_content = result.get("content", "")
     
+    # Add contact information
+    result["contact_info"] = {
+        "emails": parser._extract_emails(text_content),
+        "phones": parser._extract_phones(text_content),
+        "linkedin": parser._extract_linkedin(text_content),
+        "github": parser._extract_github(text_content)
+    }
+    
+    # Add named entities
+    result["entities"] = parser._extract_entities(text_content)
+    
+    # Add structured sections
+    result["cv_sections"] = parser._extract_cv_sections(text_content)
+    
+    # Generate a timestamp-based filename if not provided
+    if not output_path and bucket_dir:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"cv_parsed_{os.path.basename(file_path).split('.')[0]}_{timestamp}.json"
+        output_path = os.path.join(bucket_dir, filename)
+    
+    if output_path:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        
+        # Add the output path to the result
+        result["output_file"] = output_path
+            
     return result
 
 
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Parse documents and extract text, metadata, and links")
-    parser.add_argument("file_path", help="Path to the document file")
+    parser = argparse.ArgumentParser(description="CV Parser: Extract structured information from CVs/Resumes")
+    parser.add_argument("file", help="Path to the CV document file")
     parser.add_argument("-o", "--output", help="Path to save JSON output")
+    parser.add_argument("-b", "--bucket", default="/Users/mikawi/Developer/hackathon/g2scv_n/bucket", 
+                        help="Path to bucket directory for storing results")
+    
     args = parser.parse_args()
     
-    result = parse_document(args.file_path, args.output)
+    # Ensure bucket directory exists
+    os.makedirs(args.bucket, exist_ok=True)
     
-    if not args.output:
-        # Print to console if no output file specified
-        print(json.dumps(result, indent=2, ensure_ascii=False))
+    # Parse document and save to bucket
+    result = parse_document(args.file, args.output, args.bucket)
+    print(f"Parsed CV: {args.file}")
+    
+    output_location = args.output if args.output else result.get("output_file")
+    if output_location:
+        print(f"Saved output to: {output_location}")
+        
+    # Print a summary of what was extracted
+    print("\nExtracted Information Summary:")
+    if "contact_info" in result:
+        emails = result["contact_info"].get("emails", [])
+        if emails:
+            print(f"Emails: {', '.join(emails)}")
+            
+        phones = result["contact_info"].get("phones", [])
+        if phones:
+            print(f"Phone Numbers: {', '.join(phones)}")
+            
+        linkedin = result["contact_info"].get("linkedin", [])
+        if linkedin:
+            print(f"LinkedIn: {', '.join(linkedin)}")
+            
+    if "cv_sections" in result:
+        print(f"Identified {len(result['cv_sections'])} CV sections")
