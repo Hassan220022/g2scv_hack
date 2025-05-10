@@ -338,14 +338,14 @@
         "description": null,
         "stars": 0,
         "forks": 0,
-        "last_updated": "2025-05-10T12:15:31",
+        "last_updated": "2025-05-10T13:07:24",
         "languages": [
             "Python",
             "TypeScript",
-            "TeX",
             "JavaScript",
             "CSS",
-            "HTML"
+            "HTML",
+            "TeX"
         ],
         "readme": ""
     },

@@ -33,7 +33,7 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(
     title="RAG CV Generation API",
-    description="API to generate LaTeX CVs from LinkedIn, GitHub, and OCR data using an LLM.",
+    description="API to generate LaTeX CVs from LinkedIn, GitHub, and OCR data using an LLM and search GitHub READMEs.",
     version="1.0.0"
 )
 
@@ -260,57 +260,19 @@ def consolidate_and_prepare_data(
 ) -> str:
     """
     Consolidates data from all sources and prepares a text representation for the LLM.
-    This is a crucial step where you decide how to merge and prioritize information.
-    For simplicity, this example will just serialize them, but in a real app,
-    you'd intelligently merge fields (e.g., skills, experience).
+    Per user requirement: Pass LinkedIn and CV OCR data directly to the model without parsing.
+    Only parse GitHub data for better processing.
     """
-    prepared_text = "=== Candidate Information ===\n\n"
-
-    # Contact Info (Prioritize CV OCR, then LinkedIn)
-    prepared_text += "--- Contact Information ---\n"
-    name = cv_ocr_data.get("name") or linkedin_data.get("firstName", "") + " " + linkedin_data.get("lastName", "")
-    email = cv_ocr_data.get("email") or linkedin_data.get("emailAddress") # Assuming email is in linkedin_data
-    phone = cv_ocr_data.get("phone") or linkedin_data.get("phoneNumber") # Assuming phone is in linkedin_data
-    location = cv_ocr_data.get("location") or linkedin_data.get("locationName") or linkedin_data.get("geoLocationName")
-
-    if name.strip(): prepared_text += f"Name: {name.strip()}\n"
-    if email: prepared_text += f"Email: {email}\n"
-    if phone: prepared_text += f"Phone: {phone}\n"
-    if location: prepared_text += f"Location: {location}\n"
-    prepared_text += "\n"
-
-    # Summary (LinkedIn summary is often good)
-    prepared_text += "--- Professional Summary ---\n"
-    summary = linkedin_data.get("summary", cv_ocr_data.get("summary", "No summary provided."))
-    prepared_text += f"{summary}\n\n"
-
-    # Experience (Combine from LinkedIn and CV OCR, requires careful merging and deduplication)
-    prepared_text += "--- Work Experience ---\n"
-    # This is a simplified representation. Real merging would be more complex.
-    if linkedin_data.get("positions"):
-        for pos in linkedin_data["positions"]:
-            prepared_text += f"Title: {pos.get('title', 'N/A')}\n"
-            prepared_text += f"Company: {pos.get('companyName', 'N/A')}\n"
-            prepared_text += f"Dates: {pos.get('dateRange', {}).get('start', {}).get('text', 'N/A')} - {pos.get('dateRange', {}).get('end', {}).get('text', 'Present')}\n"
-            prepared_text += f"Description: {pos.get('description', 'N/A')}\n\n"
-    # Add logic to integrate cv_ocr_data['experience'] here, avoiding duplicates
-
-    # Education
-    prepared_text += "--- Education ---\n"
-    if linkedin_data.get("educations"):
-        for edu in linkedin_data["educations"]:
-            prepared_text += f"Degree: {edu.get('degreeName', 'N/A')}\n"
-            prepared_text += f"School: {edu.get('schoolName', 'N/A')}\n"
-            prepared_text += f"Dates: {edu.get('dateRange', {}).get('start', {}).get('text', 'N/A')} - {edu.get('dateRange', {}).get('end', {}).get('text', 'N/A')}\n\n"
-    # Add logic to integrate cv_ocr_data['education']
-
-    # Skills (Combine from LinkedIn and CV OCR)
-    prepared_text += "--- Skills ---\n"
-    skills_list = list(set(linkedin_data.get("skills", []) + cv_ocr_data.get("skills", [])))
-    prepared_text += ", ".join(skills_list) + "\n\n"
-
-    # Projects (From GitHub)
-    prepared_text += "--- Projects (from GitHub) ---\n"
+    # Start with raw LinkedIn data
+    prepared_text = "=== LinkedIn Data (RAW) ===\n\n"
+    prepared_text += json.dumps(linkedin_data, indent=2) + "\n\n"
+    
+    # Add raw CV OCR data
+    prepared_text += "=== CV OCR Data (RAW) ===\n\n"
+    prepared_text += json.dumps(cv_ocr_data, indent=2) + "\n\n"
+    
+    # Process only GitHub data for better readability
+    prepared_text += "=== GitHub Projects ===\n\n"
     if github_data:
         for repo_full_name, repo_info in github_data.items():
             prepared_text += f"Project: {repo_info.get('name', repo_full_name)}\n"
@@ -318,7 +280,8 @@ def consolidate_and_prepare_data(
             prepared_text += f"Languages: {', '.join(repo_info.get('languages', []))}\n"
             prepared_text += f"Stars: {repo_info.get('stars', 0)}, Forks: {repo_info.get('forks', 0)}\n"
             if repo_info.get("readme"):
-                 prepared_text += f"README Snippet: {repo_info.get('readme', '')[:200]}...\n" # Truncate README
+                 # Truncate README to avoid excessive tokens
+                 prepared_text += f"README Snippet: {repo_info.get('readme', '')[:200]}...\n"
             prepared_text += "\n"
 
     return prepared_text.strip()
@@ -331,422 +294,175 @@ def construct_llm_prompt(
     """
     Constructs the prompt for the LLM to generate the LaTeX CV.
     """
-    # This is a basic prompt. You'll want to refine this significantly.
-    # Consider providing a full LaTeX CV template structure and asking the LLM to fill it.
-    # For example, you might use a specific LaTeX class like 'moderncv' or 'AltaCV'.
-
-    prompt = f"""
-You are an expert CV writer and LaTeX formatting assistant that create ATS approved CVs.
+    # Load the prompt template from external file
+    prompt_template_path = os.path.join(os.path.dirname(__file__), 'cv_prompt_template.txt')
+    
+    # Load LaTeX template example
+    latex_template_path = os.path.join(os.path.dirname(__file__), 'cv_temp.tex')
+    
+    try:
+        # Read the prompt template
+        with open(prompt_template_path, 'r') as f:
+            prompt_template = f.read()
+        
+        # Read the LaTeX example
+        with open(latex_template_path, 'r') as f:
+            latex_example = f.read()
+        
+        # Format the prompt with the candidate data and the LaTeX example
+        prompt = prompt_template.format(candidate_info=prepared_data_str)
+        prompt += f"\n\n**LaTeX Template Example:**\n```latex\n{latex_example}\n```"
+        
+    except Exception as e:
+        # Fallback if template files are not found
+        print(f"Error loading templates: {str(e)}")
+        prompt = f"""
+You are an expert CV writer and LaTeX formatting assistant that creates ATS approved CVs.
 Your task is to generate a professional and well-structured CV in LaTeX format based on the provided candidate information.
-You must check the candidate information provided against the job description and requirements and ***IF HE IS NOT FIT FOR THE ROLE*** return the message 'You are not fit for this role."
 
 **Candidate Information:**
 {prepared_data_str}
 
 **Instructions for LaTeX CV Generation:**
-1.  Use a standard LaTeX article class or a common CV class (e.g., `article` with custom sections, or conceptually similar to `moderncv` or `res.cls`).
-2.  The CV must include the following sections if information is available:
-    * Contact Information (Name, Email, Phone, Location) - Display this prominently at the top.
-    * Professional Summary
-    * Work Experience (For each role: Title, Company, Dates, Key Responsibilities/Achievements)
-    * Education (For each degree: Degree Name, School, Dates)
-    * Skills (A list or categorized list of skills)
-    * Projects (If available, from GitHub: Project Name, Description, Technologies Used, Link if possible - though links are not in the provided data)
-3.  Format the CV clearly and professionally. Use appropriate LaTeX commands for sections, itemization, bolding key information, etc.
-4.  Ensure the output is ONLY the LaTeX code, starting with `\\documentclass` and ending with `\\end{{document}}`. Do not include any explanations or conversational text before or after the LaTeX code.
-5.  If certain information is missing for a standard section, omit the section or indicate 'N/A' gracefully if appropriate within the context of a CV.
-6.  For Work Experience and Education, list items in reverse chronological order (most recent first). (The LLM should infer this, but explicit instruction helps).
-7.  Pay attention to LaTeX special characters (e.g., %, &, _, #, {{, }}) and escape them properly if they appear in the input data and need to be rendered as text. For example, use `\\%` for percent, `\\&` for ampersand, `\\_` for underscore.
-8. 
-
-
-**LaTeX Output Example:**
-```latex
-\documentclass[10pt, letterpaper]{article}
-
-% Packages:
-\usepackage[
-    ignoreheadfoot, % set margins without considering header and footer
-    top=2 cm, % seperation between body and page edge from the top
-    bottom=2 cm, % seperation between body and page edge from the bottom
-    left=2 cm, % seperation between body and page edge from the left
-    right=2 cm, % seperation between body and page edge from the right
-    footskip=1.0 cm, % seperation between body and footer
-    % showframe % for debugging 
-]{geometry} % for adjusting page geometry
-\usepackage{titlesec} % for customizing section titles
-\usepackage{tabularx} % for making tables with fixed width columns
-\usepackage{array} % tabularx requires this
-\usepackage[dvipsnames]{xcolor} % for coloring text
-\definecolor{primaryColor}{RGB}{0, 0, 0} % define primary color
-\usepackage{enumitem} % for customizing lists
-\usepackage{fontawesome5} % for using icons
-\usepackage{amsmath} % for math
-\usepackage[
-    pdftitle={John Doe's CV},
-    pdfauthor={John Doe},
-    pdfcreator={LaTeX with RenderCV},
-    colorlinks=true,
-    urlcolor=primaryColor
-]{hyperref} % for links, metadata and bookmarks
-\usepackage[pscoord]{eso-pic} % for floating text on the page
-\usepackage{calc} % for calculating lengths
-\usepackage{bookmark} % for bookmarks
-\usepackage{lastpage} % for getting the total number of pages
-\usepackage{changepage} % for one column entries (adjustwidth environment)
-\usepackage{paracol} % for two and three column entries
-\usepackage{ifthen} % for conditional statements
-\usepackage{needspace} % for avoiding page brake right after the section title
-\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
-
-% Ensure that generate pdf is machine readable/ATS parsable:
-\ifPDFTeX
-    \input{glyphtounicode}
-    \pdfgentounicode=1
-    \usepackage[T1]{fontenc}
-    \usepackage[utf8]{inputenc}
-    \usepackage{lmodern}
-\fi
-
-\usepackage{charter}
-
-% Some settings:
-\raggedright
-\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
-\pagestyle{empty} % no header or footer
-\setcounter{secnumdepth}{0} % no section numbering
-\setlength{\parindent}{0pt} % no indentation
-\setlength{\topskip}{0pt} % no top skip
-\setlength{\columnsep}{0.15cm} % set column seperation
-\pagenumbering{gobble} % no page numbering
-
-\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
-
-\titlespacing{\section}{
-    % left space:
-    -1pt
-}{
-    % top space:
-    0.3 cm
-}{
-    % bottom space:
-    0.2 cm
-} % section title spacing
-
-\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$} % custom bullet points
-\newenvironment{highlights}{
-    \begin{itemize}[
-        topsep=0.10 cm,
-        parsep=0.10 cm,
-        partopsep=0pt,
-        itemsep=0pt,
-        leftmargin=0 cm + 10pt
-    ]
-}{
-    \end{itemize}
-} % new environment for highlights
-
-
-\newenvironment{highlightsforbulletentries}{
-    \begin{itemize}[
-        topsep=0.10 cm,
-        parsep=0.10 cm,
-        partopsep=0pt,
-        itemsep=0pt,
-        leftmargin=10pt
-    ]
-}{
-    \end{itemize}
-} % new environment for highlights for bullet entries
-
-\newenvironment{onecolentry}{
-    \begin{adjustwidth}{
-        0 cm + 0.00001 cm
-    }{
-        0 cm + 0.00001 cm
-    }
-}{
-    \end{adjustwidth}
-} % new environment for one column entries
-
-\newenvironment{twocolentry}[2][]{
-    \onecolentry
-    \def\secondColumn{#2}
-    \setcolumnwidth{\fill, 4.5 cm}
-    \begin{paracol}{2}
-}{
-    \switchcolumn \raggedleft \secondColumn
-    \end{paracol}
-    \endonecolentry
-} % new environment for two column entries
-
-\newenvironment{threecolentry}[3][]{
-    \onecolentry
-    \def\thirdColumn{#3}
-    \setcolumnwidth{, \fill, 4.5 cm}
-    \begin{paracol}{3}
-    {\raggedright #2} \switchcolumn
-}{
-    \switchcolumn \raggedleft \thirdColumn
-    \end{paracol}
-    \endonecolentry
-} % new environment for three column entries
-
-\newenvironment{header}{
-    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.5}
-}{
-    \par\kern\topsep
-} % new environment for the header
-
-\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
-  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
-    \put(
-        \LenToUnit{\paperwidth-2 cm-0 cm+0.05cm},
-        \LenToUnit{\paperheight-1.0 cm}
-    ){\vtop{{\null}\makebox[0pt][c]{
-        \small\color{gray}\textit{Last updated in September 2024}\hspace{\widthof{Last updated in September 2024}}
-    }}}%
-  }%
-}%
-
-% save the original href command in a new command:
-\let\hrefWithoutArrow\href
-
-% new command for external links:
-
-
-\begin{document}
-    \newcommand{\AND}{\unskip
-        \cleaders\copy\ANDbox\hskip\wd\ANDbox
-        \ignorespaces
-    }
-    \newsavebox\ANDbox
-    \sbox\ANDbox{$|$}
-
-    \begin{header}
-        \fontsize{25 pt}{25 pt}\selectfont John Doe
-
-        \vspace{5 pt}
-
-        \normalsize
-        \mbox{Your Location}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{mailto:youremail@yourdomain.com}{youremail@yourdomain.com}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{tel:+90-541-999-99-99}{0541 999 99 99}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{https://yourwebsite.com/}{yourwebsite.com}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{https://linkedin.com/in/yourusername}{linkedin.com/in/yourusername}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{https://github.com/yourusername}{github.com/yourusername}}%
-    \end{header}
-
-    \vspace{5 pt - 0.3 cm}
-
-
-    \section{Welcome to RenderCV!}
-
-
-
-        
-        \begin{onecolentry}
-            \href{https://rendercv.com}{RenderCV} is a LaTeX-based CV/resume version-control and maintenance app. It allows you to create a high-quality CV or resume as a PDF file from a YAML file, with \textbf{Markdown syntax support} and \textbf{complete control over the LaTeX code}.
-        \end{onecolentry}
-
-        \vspace{0.2 cm}
-
-        \begin{onecolentry}
-            The boilerplate content was inspired by \href{https://github.com/dnl-blkv/mcdowell-cv}{Gayle McDowell}.
-        \end{onecolentry}
-
-
+1. Use a standard LaTeX article class with professional formatting.
+2. The CV must include contact information, professional summary, work experience, education, skills, and projects.
+3. Format the CV clearly and professionally with appropriate sections and formatting.
+4. Return ONLY the LaTeX code, starting with \documentclass and ending with \end{{document}}.
+"""
     
-    \section{Quick Guide}
-
-    \begin{onecolentry}
-        \begin{highlightsforbulletentries}
+    return prompt
 
 
-        \item Each section title is arbitrary and each section contains a list of entries.
+# --- API Endpoints ---
 
-        \item There are 7 unique entry types: \textit{BulletEntry}, \textit{TextEntry}, \textit{EducationEntry}, \textit{ExperienceEntry}, \textit{NormalEntry}, \textit{PublicationEntry}, and \textit{OneLineEntry}.
-
-        \item Select a section title, pick an entry type, and start writing your section!
-
-        \item \href{https://docs.rendercv.com/user_guide/}{Here}, you can find a comprehensive user guide for RenderCV.
-
-
-        \end{highlightsforbulletentries}
-    \end{onecolentry}
-
-    \section{Education}
-
-
-
-        
-        \begin{twocolentry}{
-            Sept 2000 – May 2005
-        }
-            \textbf{University of Pennsylvania}, BS in Computer Science\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item GPA: 3.9/4.0 (\href{https://example.com}{a link to somewhere})
-                \item \textbf{Coursework:} Computer Architecture, Comparison of Learning Algorithms, Computational Theory
-            \end{highlights}
-        \end{onecolentry}
-
-
-
+@app.post("/generate", response_model=RAGResponse)
+async def generate_cv(request: RAGRequest = Body(...)):
+    """
+    Endpoint to generate a LaTeX CV using the RAG approach.
+    Takes LinkedIn, GitHub, and CV OCR data to create a personalized LaTeX CV.
+    """
+    # Prepare the data for the LLM
+    prepared_data = consolidate_and_prepare_data(
+        request.linkedin_data,
+        request.github_data,
+        request.cv_ocr_data
+    )
     
-    \section{Experience}
-
-
-
-        
-        \begin{twocolentry}{
-            June 2005 – Aug 2007
-        }
-            \textbf{Software Engineer}, Apple -- Cupertino, CA\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item Reduced time to render user buddy lists by 75\% by implementing a prediction algorithm
-                \item Integrated iChat with Spotlight Search by creating a tool to extract metadata from saved chat transcripts and provide metadata to a system-wide search database
-                \item Redesigned chat file format and implemented backward compatibility for search
-            \end{highlights}
-        \end{onecolentry}
-
-
-        \vspace{0.2 cm}
-
-        \begin{twocolentry}{
-            June 2003 – Aug 2003
-        }
-            \textbf{Software Engineer Intern}, Microsoft -- Redmond, WA\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item Designed a UI for the VS open file switcher (Ctrl-Tab) and extended it to tool windows
-                \item Created a service to provide gradient across VS and VS add-ins, optimizing its performance via caching
-                \item Built an app to compute the similarity of all methods in a codebase, reducing the time from $\mathcal{O}(n^2)$ to $\mathcal{O}(n \log n)$
-                \item Created a test case generation tool that creates random XML docs from XML Schema
-                \item Automated the extraction and processing of large datasets from legacy systems using SQL and Perl scripts
-            \end{highlights}
-        \end{onecolentry}
-
-
-
+    # Create the prompt for the LLM
+    prompt = construct_llm_prompt(prepared_data, request.cv_template_style)
     
-    \section{Publications}
-
-
-
+    # Use OpenAI's API to generate the CV
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-2025-04-14",
+            messages=[
+                {"role": "system", "content": "You are an expert CV writer and LaTeX formatting assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,  # Slightly higher to encourage creativity in CV generation 
+            max_tokens=4000   # Set an appropriate max_tokens (depends on OpenAI plan)
+        )
         
-        \begin{samepage}
-            \begin{twocolentry}{
-                Jan 2004
-            }
-                \textbf{3D Finite Element Analysis of No-Insulation Coils}
-            \end{twocolentry}
-
-            \vspace{0.10 cm}
-            
-            \begin{onecolentry}
-                \mbox{Frodo Baggins}, \mbox{\textbf{\textit{John Doe}}}, \mbox{Samwise Gamgee}
-
-                \vspace{0.10 cm}
-                
-        \href{https://doi.org/10.1109/TASC.2023.3340648}{10.1109/TASC.2023.3340648}
-        \end{onecolentry}
-        \end{samepage}
-
-
-    
-    \section{Projects}
-
-
-
+        # Extract and clean up the response
+        # Get the model's reply
+        model_response = response.choices[0].message.content
+        usage_data = response.usage.model_dump() if hasattr(response, 'usage') else None
         
-        \begin{twocolentry}{
-            \href{https://github.com/sinaatalay/rendercv}{github.com/name/repo}
-        }
-            \textbf{Multi-User Drawing Tool}\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item Developed an electronic classroom where multiple users can simultaneously view and draw on a "chalkboard" with each person's edits synchronized
-                \item Tools Used: C++, MFC
-            \end{highlights}
-        \end{onecolentry}
-
-
-        \vspace{0.2 cm}
-
-        \begin{twocolentry}{
-            \href{https://github.com/sinaatalay/rendercv}{github.com/name/repo}
-        }
-            \textbf{Synchronized Desktop Calendar}\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item Developed a desktop calendar with globally shared and synchronized calendars, allowing users to schedule meetings with other users
-                \item Tools Used: C\#, .NET, SQL, XML
-            \end{highlights}
-        \end{onecolentry}
-
-
-        \vspace{0.2 cm}
-
-        \begin{twocolentry}{
-            2002
-        }
-            \textbf{Custom Operating System}\end{twocolentry}
-
-        \vspace{0.10 cm}
-        \begin{onecolentry}
-            \begin{highlights}
-                \item Built a UNIX-style OS with a scheduler, file system, text editor, and calculator
-                \item Tools Used: C
-            \end{highlights}
-        \end{onecolentry}
-
-
-
-    
-    \section{Technologies}
-
-
-
+        # Log the response and usage for debugging
+        print(f"Model response received. Tokens used: {usage_data if usage_data else 'N/A'}")
         
-        \begin{onecolentry}
-            \textbf{Languages:} C++, C, Java, Objective-C, C\#, SQL, JavaScript
-        \end{onecolentry}
+        return RAGResponse(
+            latex_cv=model_response,
+            model_used="gpt-4.1-2025-04-14",
+            usage_stats=usage_data
+        )
+        
+    except Exception as e:
+        # Log the error
+        print(f"Error calling OpenAI API: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating CV: {str(e)}")
 
-        \vspace{0.2 cm}
 
-        \begin{onecolentry}
-            \textbf{Technologies:} .NET, Microsoft SQL Server, XCode, Interface Builder
-        \end{onecolentry}
+@app.post("/search/github-readmes", response_model=List[RepoReadmeResponse])
+async def search_github_readme(request: RepoReadmeQueryRequest = Body(...)):
+    """
+    Search GitHub repository READMEs based on a query.
+    Returns top_k most relevant repositories with their READMEs.
+    """
+    try:
+        # Load GitHub data
+        github_data = load_github_data()
+        
+        # Search for relevant repositories
+        results = search_github_readmes(request.query, github_data, request.top_k)
+        
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching GitHub READMEs: {str(e)}")
 
 
-    
+@app.get("/data/github", response_model=Dict[str, Any])
+async def get_github_data(username: Optional[str] = Query(None, description="GitHub username")):
+    """
+    Get GitHub data for a specific user or all available GitHub data.
+    """
+    try:
+        return load_github_data(username)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving GitHub data: {str(e)}")
 
-\end{document}}
-```
+
+@app.get("/data/linkedin", response_model=Dict[str, Any])
+async def get_linkedin_data():
+    """
+    Get the latest LinkedIn data.
+    """
+    try:
+        return load_latest_linkedin_data()
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving LinkedIn data: {str(e)}")
+
+
+@app.get("/data/cv-ocr", response_model=Dict[str, Any])
+async def get_cv_ocr_data():
+    """
+    Get the latest CV OCR data.
+    """
+    try:
+        return load_latest_cv_ocr_data()
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving CV OCR data: {str(e)}")
+
+
+@app.get("/repo-info/{repo_name}", response_model=Dict[str, Any])
+async def get_repo_info(repo_name: str):
+    """
+    Get information about a specific repository by name.
+    The repo_name should be in format 'owner/repo'.
+    """
+    try:
+        # Load GitHub data
+        github_data = load_github_data()
+        
+        # Find the repository
+        if repo_name not in github_data:
+            raise HTTPException(status_code=404, detail=f"Repository {repo_name} not found")
+        
+        return github_data[repo_name]
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving repository information: {str(e)}")
+
+
+# Health check endpoint to verify the API is running
+@app.get("/health")
+async def health_check():
+    """Health check endpoint to verify the API is running."""
+    return {"status": "healthy"}

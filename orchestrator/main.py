@@ -191,37 +191,37 @@ def call_rag_api(linkedin_json_path: str, github_json_path: str, cv_ocr_json_pat
     print(f"Calling RAG API with:\n- LinkedIn data: {linkedin_json_path}\n- GitHub data: {github_json_path}\n- CV OCR data: {cv_ocr_json_path}")
 
     try:
+        # Load the data from JSON files first, as we'll need it in either case
+        with open(linkedin_json_path, 'r') as f:
+            linkedin_data = json.load(f)
+
+        with open(github_json_path, 'r') as f:
+            github_data = json.load(f)
+
+        with open(cv_ocr_json_path, 'r') as f:
+            cv_ocr_data = json.load(f)
+            
         # Import the RAG API module if available
         sys.path.append('/Users/mikawi/Developer/hackathon/g2scv_n/services/rag_module')
         try:
             from services.rag_module.rag_api import generate_cv
 
-            # Load the data from JSON files
-            with open(linkedin_json_path, 'r') as f:
-                linkedin_data = json.load(f)
-
-            with open(github_json_path, 'r') as f:
-                github_data = json.load(f)
-
-            with open(cv_ocr_json_path, 'r') as f:
-                cv_ocr_data = json.load(f)
-
             # Call the actual RAG API function
             return generate_cv(linkedin_data, github_data, cv_ocr_data)
         except ImportError:
             # If the module is not available, use the rag_api API endpoint if it's running as a service
-            rag_api_url = "http://localhost:8005/generate-cv"  # Adjust port if needed
+            rag_api_url = "http://localhost:8005/generate"  # Endpoint is defined as '/generate' in rag_api.py
             try:
                 response = requests.post(
                     rag_api_url,
                     json={
-                        "linkedin_json_path": linkedin_json_path,
-                        "github_json_path": github_json_path,
-                        "cv_ocr_json_path": cv_ocr_json_path
+                        "linkedin_data": linkedin_data,
+                        "github_data": github_data,
+                        "cv_ocr_data": cv_ocr_data
                     }
                 )
                 response.raise_for_status()
-                return response.json().get("latex_content")
+                return response.json().get("latex_cv")
             except requests.exceptions.RequestException as e:
                 print(f"Error calling RAG API service: {e}")
                 # Fallback to mock data
