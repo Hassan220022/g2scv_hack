@@ -1,0 +1,1 @@
+•	Stadium Lottery (FEB 2022) - C language lottery system with randomly generated prizes for individuals, utilizing structures, strings, file handling, linked file searches, 2D array manipulation, and dynamic memory allocation.

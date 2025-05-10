@@ -1,0 +1,16 @@
+{
+  "name": "Fine-Tuning-BERT-for-Text-Classification",
+  "full_name": "SuzyAdel/Fine-Tuning-BERT-for-Text-Classification",
+  "description": "This project involves fine-tuning a pre-trained BERT (Bidirectional Encoder Representations from Transformers) model for a text classification task on a given dataset. The goal is to adapt BERT to classify Arabic text inputs into predefined categories by training it on a labeled dataset(Positive, Negative,Mixed) .",
+  "html_url": "https://github.com/SuzyAdel/Fine-Tuning-BERT-for-Text-Classification",
+  "language": "Jupyter Notebook",
+  "stars_count": 0,
+  "forks_count": 0,
+  "watchers_count": 0,
+  "open_issues_count": 0,
+  "created_at": "2025-04-11T09:31:09+00:00",
+  "updated_at": "2025-04-11T21:13:10+00:00",
+  "topics": [],
+  "is_private": false,
+  "homepage": null
+}
