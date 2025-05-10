@@ -43,6 +43,7 @@ class RAGRequest(BaseModel):
     github_data: Dict[str, Any] = Field(..., description="Parsed JSON data from GitHub.")
     cv_ocr_data: Dict[str, Any] = Field(..., description="Parsed JSON data from CV OCR.")
     cv_template_style: Optional[str] = Field("default", description="Identifier for the CV LaTeX template/style to use.")
+    job_description: Optional[str] = Field(None, description="Job description to tailor the CV.")
     # You could add more parameters here, e.g., custom instructions, target role for the CV
 
 class RAGResponse(BaseModel):
@@ -289,7 +290,8 @@ def consolidate_and_prepare_data(
 
 def construct_llm_prompt(
     prepared_data_str: str,
-    cv_template_style: str = "default"
+    cv_template_style: str = "default",
+    job_description: Optional[str] = None
 ) -> str:
     """
     Constructs the prompt for the LLM to generate the LaTeX CV.
@@ -319,6 +321,9 @@ def construct_llm_prompt(
         prompt = f"""
 You are an expert CV writer and LaTeX formatting assistant that creates ATS approved CVs.
 Your task is to generate a professional and well-structured CV in LaTeX format based on the provided candidate information.
+
+***Job Description:***
+{job_description if job_description else 'No job description provided.'}
 
 **Candidate Information:**
 {prepared_data_str}
