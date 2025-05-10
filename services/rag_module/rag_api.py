@@ -2,11 +2,16 @@
 
 import os
 import json
-from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, HTTPException, Body
+import glob
+import math
+import numpy as np
+from typing import Dict, Any, List, Optional, Union, Tuple
+from fastapi import FastAPI, HTTPException, Body, Query
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import openai
+import re
+from pathlib import Path
 
 # Load environment variables (especially OPENAI_API_KEY)
 load_dotenv()
@@ -45,6 +50,16 @@ class RAGResponse(BaseModel):
     model_used: str = Field(..., description="The LLM model used for generation.")
     usage_stats: Optional[Dict[str, Any]] = Field(None, description="Token usage statistics from the LLM API.")
 
+class RepoReadmeQueryRequest(BaseModel):
+    query: str = Field(..., description="Query to search for in repository READMEs.")
+    top_k: int = Field(3, description="Number of top results to return.")
+    
+class RepoReadmeResponse(BaseModel):
+    repo_name: str = Field(..., description="Full repository name including owner.")
+    repo_info: Dict[str, Any] = Field(..., description="Repository metadata.")
+    readme_content: str = Field(..., description="README content of the repository.")
+    similarity_score: float = Field(..., description="Similarity score of the query to the README content.")
+
 # --- Helper Functions ---
 
 def load_json_from_path(file_path: str) -> Dict[str, Any]:
@@ -56,6 +71,186 @@ def load_json_from_path(file_path: str) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail=f"Invalid JSON format in file: {file_path}")
+        
+def get_bucket_path() -> str:
+    """Get the path to the bucket directory."""
+    # Assuming the bucket directory is at the project root
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bucket')
+
+def find_latest_file(pattern: str) -> Optional[str]:
+    """Find the latest file matching a pattern in the bucket directory."""
+    bucket_dir = get_bucket_path()
+    files = glob.glob(os.path.join(bucket_dir, pattern))
+    
+    # Also check in subdirectories (one level deep)
+    for subdir in [d for d in os.listdir(bucket_dir) if os.path.isdir(os.path.join(bucket_dir, d))]:
+        subdir_path = os.path.join(bucket_dir, subdir)
+        files.extend(glob.glob(os.path.join(subdir_path, pattern)))
+    
+    if not files:
+        return None
+    
+    # Return the most recently modified file
+    return max(files, key=os.path.getmtime)
+
+def load_latest_cv_ocr_data() -> Dict[str, Any]:
+    """Load the latest CV OCR data from the bucket."""
+    file_path = find_latest_file('cv_*_parsed.json')
+    if not file_path:
+        # Try alternative pattern
+        file_path = find_latest_file('*_parsed.json')
+    
+    if not file_path:
+        raise HTTPException(status_code=404, detail="No CV OCR data found")
+    
+    return load_json_from_path(file_path)
+
+def load_latest_linkedin_data() -> Dict[str, Any]:
+    """Load the latest LinkedIn data from the bucket."""
+    file_path = find_latest_file('linkedin_*.json')
+    if not file_path:
+        raise HTTPException(status_code=404, detail="No LinkedIn data found")
+    
+    return load_json_from_path(file_path)
+
+def load_github_data(username: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
+    """Load GitHub data for a specific user or all available GitHub data."""
+    if username:
+        file_path = find_latest_file(f'github_data_{username}.json')
+        if not file_path:
+            raise HTTPException(status_code=404, detail=f"No GitHub data found for user: {username}")
+    else:
+        file_path = find_latest_file('github_data_*.json')
+        if not file_path:
+            raise HTTPException(status_code=404, detail="No GitHub data found")
+    
+    return load_json_from_path(file_path)
+
+def generate_embeddings(text: str) -> List[float]:
+    """Generate embeddings for text using OpenAI's embedding API."""
+    try:
+        # Truncate text to avoid token limit issues
+        max_tokens = 8000  # Text embedding API has a limit
+        truncated_text = text[:max_tokens * 4]  # Approximate character count
+        
+        response = client.embeddings.create(
+            input=truncated_text,
+            model="text-embedding-ada-002"  # Using Ada embedding model
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        print(f"Error generating embeddings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating embeddings: {str(e)}")
+
+def calculate_cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
+    """Calculate cosine similarity between two vectors."""
+    # Convert to numpy arrays for efficient calculation
+    a = np.array(vec1)
+    b = np.array(vec2)
+    
+    # Calculate cosine similarity
+    dot_product = np.dot(a, b)
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
+    
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    
+    similarity = dot_product / (norm_a * norm_b)
+    return float(similarity)  # Convert from numpy float to Python float
+        
+def get_bucket_path() -> str:
+    """Get the path to the bucket directory."""
+    # Assuming the bucket directory is at the project root
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bucket')
+
+def find_latest_file(pattern: str) -> Optional[str]:
+    """Find the latest file matching a pattern in the bucket directory."""
+    bucket_dir = get_bucket_path()
+    files = glob.glob(os.path.join(bucket_dir, pattern))
+    
+    # Also check in subdirectories (one level deep)
+    for subdir in [d for d in os.listdir(bucket_dir) if os.path.isdir(os.path.join(bucket_dir, d))]:
+        subdir_path = os.path.join(bucket_dir, subdir)
+        files.extend(glob.glob(os.path.join(subdir_path, pattern)))
+    
+    if not files:
+        return None
+    
+    # Return the most recently modified file
+    return max(files, key=os.path.getmtime)
+
+def load_latest_cv_ocr_data() -> Dict[str, Any]:
+    """Load the latest CV OCR data from the bucket."""
+    file_path = find_latest_file('cv_*_parsed.json')
+    if not file_path:
+        # Try alternative pattern
+        file_path = find_latest_file('*_parsed.json')
+    
+    if not file_path:
+        raise HTTPException(status_code=404, detail="No CV OCR data found")
+    
+    return load_json_from_path(file_path)
+
+def load_latest_linkedin_data() -> Dict[str, Any]:
+    """Load the latest LinkedIn data from the bucket."""
+    file_path = find_latest_file('linkedin_*.json')
+    if not file_path:
+        raise HTTPException(status_code=404, detail="No LinkedIn data found")
+    
+    return load_json_from_path(file_path)
+
+def load_github_data(username: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
+    """Load GitHub data for a specific user or all available GitHub data."""
+    if username:
+        file_path = find_latest_file(f'github_data_{username}.json')
+        if not file_path:
+            raise HTTPException(status_code=404, detail=f"No GitHub data found for user: {username}")
+    else:
+        file_path = find_latest_file('github_data_*.json')
+        if not file_path:
+            raise HTTPException(status_code=404, detail="No GitHub data found")
+    
+    return load_json_from_path(file_path)
+
+
+def search_github_readmes(query: str, github_data: Dict[str, Dict[str, Any]], top_k: int = 3) -> List[RepoReadmeResponse]:
+    """Search GitHub repository READMEs based on a query using embeddings and semantic similarity."""
+    # Generate embedding for the query
+    query_embedding = generate_embeddings(query)
+    
+    # Calculate similarity scores for each repository README
+    results = []
+    for repo_name, repo_info in github_data.items():
+        readme_content = repo_info.get('readme', '')
+        if not readme_content or len(readme_content.strip()) < 10:  # Skip empty or very short READMEs
+            continue
+        
+        # Generate embedding for the README content
+        try:
+            readme_embedding = generate_embeddings(readme_content)
+            similarity_score = calculate_cosine_similarity(query_embedding, readme_embedding)
+            
+            results.append(RepoReadmeResponse(
+                repo_name=repo_name,
+                repo_info={
+                    'name': repo_info.get('name', ''),
+                    'description': repo_info.get('description', ''),
+                    'languages': repo_info.get('languages', []),
+                    'stars': repo_info.get('stars', 0),
+                    'forks': repo_info.get('forks', 0),
+                    'last_updated': repo_info.get('last_updated', '')
+                },
+                readme_content=readme_content,
+                similarity_score=similarity_score
+            ))
+        except Exception as e:
+            print(f"Error processing {repo_name}: {str(e)}")
+            continue
+    
+    # Sort by similarity score (descending) and return top_k results
+    results.sort(key=lambda x: x.similarity_score, reverse=True)
+    return results[:top_k]
 
 
 def consolidate_and_prepare_data(

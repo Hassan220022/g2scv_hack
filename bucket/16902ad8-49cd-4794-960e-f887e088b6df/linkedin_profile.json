@@ -1,0 +1,421 @@
+{
+    "linkedinUrl": "https://www.linkedin.com/in/mikawi/",
+    "firstName": "Hassan",
+    "lastName": "Mikawi",
+    "fullName": "Hassan Mikawi",
+    "headline": "Software Engineer |Software Developer | Software Architect | SQL Server Developer | .Net Developer | .Net MAUI | Angular Developer | React Developer | Flutter Developer",
+    "connections": 204,
+    "followers": 206,
+    "email": "hassan@ahram.org.eg",
+    "mobileNumber": null,
+    "jobTitle": "Software Engineer",
+    "companyName": "Al-Ahram Establishment",
+    "companyIndustry": "Newspapers",
+    "companyWebsite": "ahram.org.eg",
+    "companyLinkedin": "linkedin.com/company/amac---al-ahram-establishment",
+    "companyFoundedIn": 1875,
+    "companySize": "10001+",
+    "currentJobDuration": "4 mos",
+    "currentJobDurationInYrs": 0.33,
+    "topSkillsByEndorsements": "Python (Programming Language), C (Programming Language)",
+    "addressCountryOnly": "Egypt",
+    "addressWithCountry": "New Cairo, Cairo, Egypt",
+    "addressWithoutCountry": "New Cairo, Cairo",
+    "profilePic": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_100_100/B4DZUewn3yHIAY-/0/1739977819732?e=1752105600&v=beta&t=b0CpkPpWETTPY2l-yvp_oaKLDG5gQFP2jkySiwLXClA",
+    "profilePicHighQuality": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_800_800/B4DZUewn3yHIAg-/0/1739977819732?e=1752105600&v=beta&t=ijKni-6ogoIt4Qex8rzn-1Qx5mN0-kr9_RJBQLwarjg",
+    "about": "Success is not achieved overnight, but is the result of accumulation over time. As Warren Buffett said, \"Life is like rolling a snowball. The most important thing is to find wet snow and a long ramp.\" ☃️❄️ Every small effort will turn into a huge achievement with the accumulation of time. ⏳ Bill Gates also said, \"No matter when you start, the important thing is not to stop after you start.\" 🏁 Every morning's effort is to welcome a brighter tomorrow. 🌅 Elon Musk also reminds us, \"When something is important enough, even if the chances are slim, do it.\" 🌟 Only by sticking to your dreams and not giving up easily can you constantly surpass yourself and achieve an extraordinary future. 🚀 As Steve Jobs said, \"Be hungry for knowledge and be humble as if you are stupid.\" 📚🤓 The secret to success lies in continuous learning, continuous improvement, and the courage to pursue your dreams. 💪✨",
+    "publicIdentifier": "mikawi",
+    "openConnection": null,
+    "urn": "ACoAADspqHUBqNcX4rPbxHsWCpd0aNtnltlyqOQ",
+    "creatorWebsite": {
+        "name": "mikawi.org",
+        "link": "https://mikawi.org"
+    },
+    "experiences": [
+        {
+            "companyId": "540680",
+            "companyUrn": "urn:li:fsd_company:540680",
+            "companyLink1": "https://www.linkedin.com/company/540680/",
+            "logo": "https://media.licdn.com/dms/image/v2/C510BAQGnEBjWQaWNUQ/company-logo_200_200/company-logo_200_200/0/1631341387311?e=1752105600&v=beta&t=ELh4RDR2bzPHiaSTHL7q4jCMnf5MZc-I4QvXWGQDFPg",
+            "title": "Software Engineer",
+            "subtitle": "Al-Ahram Establishment · Internship",
+            "caption": "Sep 2024 - Dec 2024 · 4 mos",
+            "metadata": "Cairo, Egypt · On-site",
+            "breakdown": false,
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "textComponent",
+                            "text": "Developed Python scripts to automate data retrieval from Microsoft SQL Server, streamlining processes for senior developers.  \nBuilt a fully functional agricultural website from the ground up, handling both front-end and back-end development.  \nImplemented security measures to mitigate potential attacks and managed site deployment on local servers. \nOptimized performance and traffic handling, ensuring stable and efficient operations."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "updates": [],
+    "skills": [
+        {
+            "title": "Internet Software",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Software Engineer at Al-Ahram Establishment"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": ".NET Framework",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Software Engineer at Al-Ahram Establishment"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Software Infrastructure",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Software Engineer at Al-Ahram Establishment"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Artificial Intelligence (AI)",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Hardware Prototyping (Arduino/Raspberry Pi)",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "C#",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Python (Programming Language)",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        },
+                        {
+                            "type": "insightComponent",
+                            "text": "1 endorsement"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Anaconda",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Embedded C",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "C (Programming Language)",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        },
+                        {
+                            "type": "insightComponent",
+                            "text": "1 endorsement"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Flutter",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Java",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "DevOps",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Arab Academy for Science, Technology and Maritime Transport"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Management Professional",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Marketing",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Marketing Management",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Corporate Image Management",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Dev C++",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Public Affairs",
+            "subComponents": [
+                {
+                    "description": []
+                }
+            ]
+        },
+        {
+            "title": "Custom Tool Development",
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Software Engineer at Al-Ahram Establishment"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "profilePicAllDimensions": [
+        {
+            "width": 100,
+            "height": 100,
+            "url": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_100_100/B4DZUewn3yHIAY-/0/1739977819732?e=1752105600&v=beta&t=b0CpkPpWETTPY2l-yvp_oaKLDG5gQFP2jkySiwLXClA"
+        },
+        {
+            "width": 400,
+            "height": 400,
+            "url": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_400_400/B4DZUewn3yHIAk-/0/1739977819732?e=1752105600&v=beta&t=d8zK1-dt-2qimlMH7rvEN16Du4YxqJD3N0F4wFb-bzo"
+        },
+        {
+            "width": 800,
+            "height": 800,
+            "url": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_800_800/B4DZUewn3yHIAg-/0/1739977819732?e=1752105600&v=beta&t=ijKni-6ogoIt4Qex8rzn-1Qx5mN0-kr9_RJBQLwarjg"
+        },
+        {
+            "width": 200,
+            "height": 200,
+            "url": "https://media.licdn.com/dms/image/v2/D4D03AQE-xzESnmZ0tg/profile-displayphoto-shrink_200_200/B4DZUewn3yHIAc-/0/1739977819693?e=1752105600&v=beta&t=FgSMP1fKNldCK_VtX44hk9UUJ4EEBuqtPe4F7du5R74"
+        }
+    ],
+    "educations": [
+        {
+            "companyId": "760817",
+            "companyUrn": "urn:li:fsd_company:760817",
+            "companyLink1": "https://www.linkedin.com/company/760817/",
+            "logo": "https://media.licdn.com/dms/image/v2/D4D0BAQHaTMCdeWgiDA/company-logo_200_200/company-logo_200_200/0/1698992165567/arab_academy_for_science_and_technology_and_maritime_transport_logo?e=1752105600&v=beta&t=TONBNTAdqDYo-xiYybVMzZvUkNDOYign0GlgJwFeh-U",
+            "title": "Arab Academy for Science, Technology and Maritime Transport",
+            "subtitle": "Bachelor's degree, Computer Engineering",
+            "caption": "Sep 2020 - Aug 2025",
+            "breakdown": false,
+            "subComponents": [
+                {
+                    "description": [
+                        {
+                            "type": "insightComponent",
+                            "text": "Grade: 3.3"
+                        },
+                        {
+                            "type": "insightComponent",
+                            "text": "Activities and societies: Inception (Innovation & Entrepreneurship Club): AI prototypes, pitch competitions  \nAIS (AI Society): AI workshops, mentored peers in ML  \nPro Ping Pong (Shooting Club & AASTMT): Competed in tournaments, trained new members  \nHardware & Software Tinkering: Arduino/Raspberry Pi projects, IoT robotics"
+                        },
+                        {
+                            "type": "textComponent",
+                            "text": "I’m an AI enthusiast with a passion for bridging software and hardware solutions. At AIS (AI Society), I conduct AI research and mentor peers in machine learning fundamentals. As part of Inception (Innovation & Entrepreneurship Club), I collaborate on pitch competitions and develop AI-based prototypes. In my free time, I tinker with Arduino and Raspberry Pi projects, exploring IoT and robotics. I’m also a professional ping pong player, representing the Shooting Club in Maadi and AASTMT in local and regional tournaments. I enjoy pushing the boundaries of innovation, sharing knowledge, and staying active both in tech and on the court."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "licenseAndCertificates": [],
+    "honorsAndAwards": [],
+    "languages": [],
+    "volunteerAndAwards": [],
+    "verifications": [],
+    "promos": [],
+    "highlights": [],
+    "projects": [],
+    "publications": [],
+    "patents": [],
+    "courses": [],
+    "testScores": [],
+    "organizations": [],
+    "volunteerCauses": [],
+    "interests": [
+        {
+            "section_name": "Companies",
+            "section_components": [
+                {
+                    "titleV2": "Microsoft",
+                    "caption": "25,388,033 followers",
+                    "size": "LARGE",
+                    "textActionTarget": "https://www.linkedin.com/company/1035/",
+                    "subComponents": []
+                },
+                {
+                    "titleV2": "Siemens",
+                    "caption": "7,620,184 followers",
+                    "size": "LARGE",
+                    "textActionTarget": "https://www.linkedin.com/company/1043/",
+                    "subComponents": []
+                }
+            ]
+        },
+        {
+            "section_name": "Newsletters",
+            "section_components": [
+                {
+                    "titleV2": "Spotlight AI",
+                    "caption": "Published monthly",
+                    "subtitle": "Discover the latest in Industrial AI: expert insights, real-world applications, and trends transforming the industry.",
+                    "size": "LARGE",
+                    "textActionTarget": "https://www.linkedin.com/newsletters/7288600283314614272",
+                    "subComponents": [
+                        {
+                            "insightComponent": {
+                                "text": "Siemens",
+                                "actionTarget": "https://www.linkedin.com/company/1043/"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "titleV2": "AGENTIC INTELLIGENCE",
+                    "caption": "Published weekly",
+                    "subtitle": "The First Newsletter Dedicated to AI Agent Breakthroughs",
+                    "size": "LARGE",
+                    "textActionTarget": "https://www.linkedin.com/newsletters/7293015480007557121",
+                    "subComponents": [
+                        {
+                            "insightComponent": {
+                                "text": "Pascal BORNET",
+                                "actionTarget": "https://www.linkedin.com/in/pascalbornet"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "recommendations": []
+}

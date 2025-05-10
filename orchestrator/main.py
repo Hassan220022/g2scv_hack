@@ -16,7 +16,7 @@ from typing import Dict, Optional, Union, Any
 # Helper function to encapsulate LinkedIn API call for parallel execution
 def process_linkedin_data(linkedin_url: str, session_dir: str) -> Optional[str]:
     """
-    Calls the LinkedIn API, gets its data, and saves it in the session_dir.
+    Calls the LinkedIn API, gets its data, and saves it in the session_dir and bucket directory.
 
     Args:
         linkedin_url: The URL of the LinkedIn profile.
@@ -39,13 +39,27 @@ def process_linkedin_data(linkedin_url: str, session_dir: str) -> Optional[str]:
             apify_dataset_id = linkedin_api_response_data.get("dataset_id")
 
             if linkedin_profile_data:
+                # Extract LinkedIn username from URL or use a default
+                linkedin_username = linkedin_url.split("/in/")[-1].rstrip("/") if "/in/" in linkedin_url else "profile"
+                
+                # Save to bucket directory first
+                bucket_dir = "/Users/mikawi/Developer/hackathon/g2scv_n/bucket"
+                bucket_filename = f"linkedin_data_{linkedin_username}.json"
+                bucket_json_path = utils.save_json_to_file(
+                    data=linkedin_profile_data,
+                    dir_path=bucket_dir,
+                    filename=bucket_filename
+                )
+                print(f"LinkedIn data saved to bucket: {bucket_json_path}")
+                
+                # Save to session directory
                 linkedin_filename = "linkedin_profile.json"
                 linkedin_json_path = utils.save_json_to_file(
                     data=linkedin_profile_data,
                     dir_path=session_dir,
                     filename=linkedin_filename
                 )
-                print(f"LinkedIn data received from API and saved to: {linkedin_json_path}")
+                print(f"LinkedIn data also saved to session: {linkedin_json_path}")
 
                 if apify_run_id and apify_dataset_id:
                     print(f"Confirming data receipt with LinkedIn API to delete Apify data (run: {apify_run_id})...")
