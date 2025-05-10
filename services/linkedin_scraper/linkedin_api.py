@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import datetime
 import uuid
@@ -9,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 from apify_client import ApifyClient
+
+# Add shared directory to the path for utils
+sys.path.append('/Users/mikawi/Developer/hackathon/g2scv_n/shared')
 from utils import save_json_to_file
 
 # Load environment variables
@@ -164,17 +168,26 @@ async def scrape_linkedin_profile(request: LinkedInURLRequest):
         # with open(file_path, "w", encoding="utf-8") as f:
         #     json.dump(raw_data, f, indent=2, ensure_ascii=False)
             
-        # print(f"LinkedIn profile data saved to {file_path}")
+        # Generate a unique filename with timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"linkedin_profile_{profile_id}_{timestamp}.json"
+        file_path = os.path.join(BUCKET_DIR, filename)
+        
+        # Save raw data to file
+        save_json_to_file(raw_data, BUCKET_DIR, filename)
+        
+        print(f"LinkedIn profile data saved to {file_path}")
             
         # Return basic info about the saved data
-        # return {
-        #     "success": True,
-        #     "message": "LinkedIn data saved successfully",
-        #     "run_id": run_id,
-        #     "dataset_id": dataset_id,
-        #     "saved_to": file_path,
-        #     "item_count": len(raw_data)
-        # }
+        return {
+            "success": True,
+            "message": "LinkedIn data saved successfully",
+            "run_id": run_id,
+            "dataset_id": dataset_id,
+            "profile_data": raw_data[0] if raw_data else {},
+            "saved_to": file_path,
+            "item_count": len(raw_data)
+        }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error scraping LinkedIn profile: {str(e)}")
