@@ -1,0 +1,397 @@
+\documentclass[letterpaper,10.5pt]{article}
+%Packages
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{hyphenat}
+\usepackage{fontawesome}
+\input{glyphtounicode}
+
+
+%---------- FONT OPTIONS ----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1}
+  }
+}
+
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+
+\newcommand{\resumeSubSubheading}[2]{
+    \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+
+\newcommand{\resumeEducationHeading}[6]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+      \textit{\small#5} & \textit{\small #6} \\
+    \end{tabular*}\vspace{-5pt}
+}
+
+
+\newcommand{\resumeProjectHeading}[2]{
+    \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+
+\newcommand{\resumeOrganizationHeading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textit{\small #2} \\
+      \textit{\small#3}
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%---------- HEADING ----------
+
+\begin{center}
+    \textbf{\Huge \scshape Hassan Sherif Mikawi} \\ \vspace{5pt}
+    \small
+    \hspace{.5pt} \href{tel:+201023667216}{+201023667216}
+    $|$
+    \hspace{.5pt} \href{mailto:hassansherif122202@gmail.com}{hassansherif122202@gmail.com}
+    $|$
+    \hspace{.5pt} \href{https://www.linkedin.com/in/mikawi}{LinkedIn}
+    $|$
+    \hspace{.5pt} \href{https://github.com/Hassan220022}{GitHub}
+    $|$
+    \faGlobe \hspace{.5pt} \href{https://mikawi.org}{Portfolio}
+    % $|$
+    % \faMapMarker \hspace{.5pt} \href{https://www.google.com/maps/place/Arab+Academy+For+Science,+Technology+%26+Maritime+Transport/@30.0954357,31.3711535,17z/data=!4m15!1m8!3m7!1s0x1458161683934e59:0x4567a95d150917ef!2sArab+Academy+for+Science,+Technology+%26+Maritime+Transport+-+Engineering+Building+B,+Sheraton+Al+Matar,+El+Nozha,+Cairo+Governorate+4471314!3b1!8m2!3d30.0954357!4d31.3737284!16s%2Fg%2F11_scdrcm!3m5!1s0x1458161427e28abb:0x6258e0ca55113e35!8m2!3d30.0962322!4d31.3736879!16s%2Fg%2F1th3qtl3?entry=ttu}{Cairo, Egypt}
+\end{center}
+
+
+
+
+
+
+
+%----------- EDUCATION -----------
+
+
+  % \resumeEducationHeading
+  %   {\href{https://aast.edu/en/index.php?from=edurank.org}{Arab Academy for Science, Technology and Maritime Transport (AAST)}}{Cairo, Egypt}
+  %   {B.Sc. in Electrical and Computer Engineering;\textbf{GPA: 3.3/4.00}}{Sep 2020 \textbf{--} May 2025}
+  %   {}{}
+  %     % \resumeSubHeadingListStart
+  %     % \small{\item{
+  %     %     \textbf{Relevant coursework:} Data Structures, Theory of Computation, Databases, \vspace{2pt}Computer Networking, OOP, Software Engineering, Computer Architecture, Operating Systems, Machine learning.}}
+  %     %     % \textbf{National University Admission Exam (YKS):} Ranked $75^{th}$ in Mathematics and Science among ca. 2.3 million candidates with a test score of 489.92/500. (Jul 2018)}}
+  %     % \resumeSubHeadingListEnd
+  
+  % \resumeEducationHeading
+  %   {\href{https://tech.alxafrica.com/hubfs/ALX-Software-Engineering-Curriculum.pdf?hsLang=en}{ALX Software Engineering (Tuition sponsored by Mastercard)}}{Cairo, Egypt}
+  %   {Comprehensive full stack development course}{Apr 2023 \textbf{--} May 2024}
+  %   {}{}
+  % \resumeSubHeadingListEnd
+
+
+\section{Education}
+  \resumeSubHeadingListStart
+    
+    \resumeSubheading
+      {\href{https://aast.edu/en/index.php?from=edurank.org}{Arab Academy for Science, Technology and Maritime Transport (AAST)}}{Cairo, Egypt}
+      {B.Sc. in Electrical and Computer Engineering;\textbf{GPA: 3.3/4.00}}{Oct 2020 \textbf{--} July 2025}
+      
+    \resumeSubheading
+    {\href{https://tech.alxafrica.com/hubfs/ALX-Software-Engineering-Curriculum.pdf?hsLang=en}{ALX Software Engineering}}{Cairo, Egypt}
+    {Comprehensive full stack development course}{Apr 2023 \textbf{--} May 2024}
+
+    % \resumeSubheading
+    % {\href{https://sakkaraschoolmaadi.com/}{Sakkara Language School Maadi }}{Cairo, Egypt}
+    % {IGCSE with a grade of 90\% }{2020}
+    
+  \resumeSubHeadingListEnd
+
+%----------- RELEVANT COURSEWORK & CERTIFICATIONS -----------
+
+\section{Relevant Coursework \& Certifications}
+  \resumeSubHeadingListStart
+    \resumeItem{\textbf{Embedded Systems (AVR) Course at \href{https://www.imtschool.com/}{IMT School}:} Completed hands-on AVR microcontroller programming and embedded systems fundamentals.}
+    \resumeItem{\textbf{Networking \& Cyber Security Internship at \href{https://seegypt.com/}{SEE Company}:} Learned cyber security concepts and CCNA fundamentals through practical training.}
+    \resumeItem{\textbf{Flutter Development Course on \href{https://www.udemy.com/share/101rfI3@KrQXcIQfUCfZKdb0xVqKLKdnx6689mXcLDpKdRQCCB3qYZEyTs9KuzFftgd7fqvAJA==/}{Udemy}:} Built multiple projects: "Acade" game (XO, Hangman, Number Prediction), Quran app, and a full-stack ecommerce app with Google Auth, seller dashboard, and self-hosted database.}
+    \resumeItem{\textbf{Software Engineering Course at ALX:} Covered software engineering principles, full-stack development, and project management.}
+  \resumeSubHeadingListEnd
+
+%----------- EXPERIENCE -----------
+
+\section{Experience}
+  \vspace{3pt}
+  \resumeSubHeadingListStart
+  % \resumeSubheading
+  %     {Co-founder and CTO at YBM}{Startup}
+  %     {Oversaw the technical direction, managed website development, and various digital projects.}{Sep 2022 \textbf{--} Jan 2024}
+  %       \resumeItemListStart
+  %           \resumeItem{Directed the strategic planning and execution of technology solutions, ensuring alignment with business goals and driving innovation in product development.}
+  %           \resumeItem{Led the development team in designing and deploying a scalable website architecture, incorporating modern web technologies to enhance user experience and operational efficiency.}
+  %           \resumeItem{Managed key projects from concept to deployment, focusing on optimizing performance and integrating advanced digital tools to stay ahead in competitive markets.}
+  %       \resumeItemListEnd
+    \resumeSubheading
+      {Intern at Arab Organization for Industrialization (AOI)}{}
+      {Contributed to the manufacturing line for hardware components.}{Jun 2023 \textbf{--} July 2023}
+        \resumeItemListStart
+            \resumeItem{Assisted in the optimization of the hardware assembly line, implementing lean manufacturing principles to increase efficiency and reduce waste.}
+            % \resumeItem{Provided real-time technical support and troubleshooting during the manufacturing process, enhancing product quality and assembly speed.}
+            \resumeItem{Collaborated with engineering teams to refine design specifications and ensure compliance with industry standards.}
+        \resumeItemListEnd
+
+    \resumeSubheading
+      {Software Engineer Intern at Al-Ahram Establishment}{Cairo, Egypt}
+      {Internship}{Sep 2024 \textbf{--} Dec 2024}
+        \resumeItemListStart
+            \resumeItem{Developed Python scripts to automate data retrieval from Microsoft SQL Server, streamlining processes for senior developers.}
+            \resumeItem{Built a fully functional agricultural website from the ground up, handling both front-end and back-end development.}
+            \resumeItem{Implemented security measures to mitigate potential attacks and managed site deployment on local servers.}
+            \resumeItem{Optimized performance and traffic handling, ensuring stable and efficient operations.}
+        \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+
+
+
+
+% %----------- AWARDS & ACHIEVEMENTS -----------
+
+% \section{Awards \& Achievements}
+%   \vspace{2pt}
+%   \resumeSubHeadingListStart
+%     \small{\item{
+%         \textbf{High Honors Degree:}{ Awarded to Bachelor alumni who have graduated with a GPA greater than or equal to 3.50 by Boğaziçi University. (Jul 2023)} \\ \vspace{3pt}
+
+%         \textbf{TÜBİTAK 2247-C Intern Researcher Scholarship:}{ Awarded to students who take part in research projects carried out by the Scientific and Technological Research Council of Turkey (TÜBİTAK). (Dec 2021 \textbf{--} Jun 2022)} \\ \vspace{3pt}
+    
+%         % \textbf{National University Admission Exam (YKS):}{ Ranked $75^{th}$ in Mathematics and Science among ca. 2.3 million candidates with a test score of 489.92/500. (Jul 2018)} \\ \vspace{3pt}
+        
+%         \textbf{KYK Outstanding Success Scholarship:}{ Awarded to students who have been ranked in the top 100 on National University Admission Exam by Higher Education Credit and Hostels Institution (KYK). (Sep 2018 \textbf{--} Jun 2023)} \\ \vspace{3pt}
+        
+%         % \textbf{Boğaziçi University Success Scholarship:}{ Awarded to students who have been ranked in the top 100 on National University Admission Exam by Boğaziçi University. (Sep 2018 \textbf{--} Jun 2023)} \\ \vspace{3pt}
+        
+%         \textbf{Kocaeli Science High School Valedictorian Award:}{ Graduated as the highest ranked student. (Jun 2018)}
+%     }}
+%   \resumeSubHeadingListEnd
+
+
+
+%----------- PROJECTS -----------
+
+\section{Projects}
+    \vspace{3pt}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+        {\vspace{3pt}\textbf{\href{https://github.com/Flex-Language}{Flex Programming Language (Graduation Project)}}
+        $|$
+          {Python, JavaScript, React, VS Code Extension}}{Jan 2024 -- Apr 2025}
+        \resumeItemListStart
+            \resumeItem{Developed in Python and Franco-Arab (Arabic transliteration) syntax}
+            \resumeItem{Integrated an AI model for error correction that explains each error directly in the terminal}
+            \resumeItem{Designed and implemented an innovative programming language that seamlessly blends multiple syntax styles (English, Arabic transliteration, and C-style) to accommodate diverse programming preferences}
+            \resumeItem{Developed a robust interpreter with lexical analyzer, recursive descent parser, and comprehensive error handling including AI-assisted debugging}
+            \resumeItem{Created a feature-rich online IDE with real-time input handling and code execution capabilities}
+            \resumeItem{Built two VSCode extensions: one for language support and another with an integrated chatbot to facilitate learning for students}
+            \resumeItem{Implemented cross-platform compatibility with executable builds for Windows, macOS, and Linux}
+            \resumeItem{Designed a smart import system supporting modular code organization and library management}
+        \resumeItemListEnd
+      %      \resumeProjectHeading
+      %        {\vspace{3pt}\textbf{Advanced Home Server Setup (for Personal Use)}
+      %          $|$
+      %            {Docker, Homarr, Plex, Nginx, VPN}}{Feb 2024}
+      %            \resumeItemListStart
+      %              \resumeItem{Engineered an extensive home lab setup using Docker to deploy and manage a wide array of services such as media servers (Plex, Jellyfin), download clients \textbf{(Transmission)}, and content managers \textbf{(Radarr, Sonarr, Prowlarr)}}
+      %              \resumeItem{Employed Tautulli and Kasm for detailed monitoring and secure, isolated browsing environments respectively, optimizing both user experience and operational security.}
+      %              \resumeItem{Set up Mealie for meal planning and Teslamate for data monitoring, demonstrating versatility in server utility beyond traditional media and file storage roles.}
+      %              \resumeItem{Reinforced network security with VPN integrations, safeguarding all data transmissions especially in privacy-sensitive applications like torrenting and external media access.}
+      %            \resumeItemListEnd
+      \resumeProjectHeading
+        {\href{https://github.com/Hassan220022/Hyper-Market-Management-System}{\textbf{Hyper Market Management System }}
+        $|$
+          {Java, MySQL, NetBeans, jBCrypt, FlatLaf}}{Jun 2023}
+          \resumeItemListStart
+            \resumeItem{Revolutionized market management with a comprehensive system for sales, purchases, and employee roles.}
+            \resumeItem{Implemented administrative, marketing, inventory management, sales, and user modules.}
+            \resumeItem{Used Java for backend development, NetBeans for GUI, and MySQL for the database.}
+            \resumeItem{Enhanced security with password management using jBCrypt and improved design using FlatLaf.}
+            \resumeItem{Packaged for easy installation using jpackage with an executable installer available in the releases.}
+          \resumeItemListEnd
+
+      \resumeProjectHeading
+        {\href{https://github.com/Hassan220022/simple_shell}{\textbf{Simple Shell}}
+        $|$
+          {C, Unix System Calls, GCC, Betty Coding Style}}{Dec 2023}
+          \resumeItemListStart
+            \resumeItem{Developed a UNIX command line interpreter as a group project, emulating basic shell functionalities.}
+            \resumeItem{Implemented functionalities including command execution, environment manipulation, and custom input handling}
+            \resumeItem{Incorporated system-level programming with Unix system calls like fork, execve, and waitpid to manage processes.}
+            \resumeItem{Utilized C for core development with strict adherence to the Betty coding style for clean and maintainable code.}
+          \resumeItemListEnd
+
+        % \resumeProjectHeading
+        %   {\href{https://github.com/Hassan220022/weapon-detection-ai}{\textbf{AI Weapon Detection Model}}
+        %   $|$
+        %     {Python, YOLOv8, Machine Learning, Video Processing}}{Updated Dec 2023}
+        %     \resumeItemListStart
+        %       \resumeItem{Developed an advanced AI model for real-time weapon detection in video streams, using the \textbf{YOLOv8} object detection algorithm, emphasizing the reduction of false positives and enhancing detection reliability.}
+        %       \resumeItem{Focused on precision optimization techniques in machine learning to refine the model's accuracy and effectively distinguish between similar objects, thereby minimizing false alarms.}
+        %       \resumeItem{Implemented performance enhancements to improve processing speed and accuracy on a diverse dataset, ensuring robust detection capabilities across different video conditions and weapon types.}
+        %       \resumeItem{Conducted extensive testing and validation, leading to a significant improvement in model performance with higher detection rates and faster processing times.}
+        %       \resumeItem{Prepared comprehensive documentation and setup guidelines to facilitate model deployment and scalability in real-world security systems.}
+        %     \resumeItemListEnd
+
+
+    \resumeSubHeadingListEnd
+
+
+
+%----------- RELEVANT COURSEWORK -----------
+
+% \section{Relevant Coursework}
+  % \vspace{2pt}
+  % \resumeSubHeadingListStart
+    % \small{\item{
+        % \textbf{Major coursework:}{ Materials Science, Electrical Circuits I-II, Digital System Design, Numerical Methods, Probability Theory, Electronics I-II, Signals and Systems, Electromagnetic Field Theory, Energy Conversion, System Dynamics and Control, Communication Engineering, Pattern Recognition, Introduction to Digital Signal Processing, Introduction to Digital Communications, Introduction to Database Systems, Introduction to Image Processing, Machine Vision} \\ \vspace{3pt}
+        
+        % \textbf{Minor coursework:}{ Discrete Computational Structures, Introduction to Object-Oriented Programming, Data Structures and Algorithms, Computer Organization, Fundamentals of Software Engineering}
+    % }}
+  % \resumeSubHeadingListEnd
+
+
+
+%----------- CERTIFICATES -----------
+
+% \section{Certificates}
+  % \resumeSubHeadingListStart
+    
+    % \resumeOrganizationHeading
+      % {Procter \& Gamble VIA Certificate Program}{Feb 2022}{Project Management and Personal Productivity}
+    
+  % \resumeSubHeadingListEnd
+
+%----------- SKILLS -----------
+
+\section{Skills}
+  \vspace{2pt}
+  \resumeSubHeadingListStart
+    \small{\item{
+        
+        \textbf{Languages:}{ C/C++, C\#, Java, Python, JavaScript, Bash, SQL, Flutter} \\ \vspace{3pt}
+
+        \textbf{Operating Systems:}{ Windows, linux, MacOS} \\ \vspace{3pt}
+        
+        \textbf{Developer Tools:}{ Git, SSH, Linux, VS Code, Visual Studio, Docker, Servers\{linux , macos , windows Servers\}} \\ \vspace{3pt}
+        
+        \textbf{Methodologies:}{ Agile, Scrum, OOP, Functional Programming, DevOps, CI/CD, TDD} \\ \vspace{3pt}
+        
+    }}
+  \resumeSubHeadingListEnd
+
+% ----------- ORGANIZATIONS -----------
+
+\section{Extracurricular Activities}
+  \resumeSubHeadingListStart
+    
+    % \resumeOrganizationHeading
+    %   {Inceptum Club}{\textbf{Head of SNCS} -- (AAST) Feb 2023}
+    %   {Spearheaded initiatives to connect the technical world with students.}
+      
+    \resumeOrganizationHeading
+      {ASI - AI Club (Head of Learning)}{(AAST) Jan 2024}
+      {Responsible for designing and implementing the curriculum and organizing AI-focused tournaments.}
+    
+  \resumeSubHeadingListEnd
+
+
+
+% %----------- HOBBIES -----------
+
+% \section{Hobbies}
+%   \resumeSubHeadingListStart
+%     \small{\item{PingPong, Padel, Squash, Card Games}}
+%   \resumeSubHeadingListEnd
+
+
+% \begin{center}
+%     \small Last Updated: \today
+% \end{center}
+%-------------------------------------------
+\end{document}
