@@ -176,7 +176,7 @@ def call_cv_ocr_api(cv_file_path: str, session_dir: str = None) -> dict:
         # Fallback to mock data if the service is unavailable
         return {"name": "CV Parse Error", "text": f"Error occurred while parsing CV: {str(e)}", "error": str(e)}
 
-def call_rag_api(linkedin_json_path: str, github_json_path: str, cv_ocr_json_path: str) -> str:
+def call_rag_api(linkedin_json_path: str, github_json_path: str, cv_ocr_json_path: str, job_description: Optional[str] = None) -> str:
     """
     Call the RAG API service to generate LaTeX CV from the collected data.
 
@@ -217,7 +217,8 @@ def call_rag_api(linkedin_json_path: str, github_json_path: str, cv_ocr_json_pat
                     json={
                         "linkedin_data": linkedin_data,
                         "github_data": github_data,
-                        "cv_ocr_data": cv_ocr_data
+                        "cv_ocr_data": cv_ocr_data,
+                        "job_description": job_description
                     }
                 )
                 response.raise_for_status()
@@ -290,7 +291,7 @@ def convert_latex_to_pdf(latex_content: str, output_dir: str, filename_base: str
         return fallback_path
 
 
-def main_orchestrator(linkedin_url: str, github_username: str, cv_file_path: str, output_dir: Optional[str] = None):
+def main_orchestrator(linkedin_url: str, github_username: str, cv_file_path: str, job_description: Optional[str] = None, output_dir: Optional[str] = None):
     print("Starting CV generation process...\n")
 
     # 1. Create new dir in /bucket with a random id.
@@ -400,7 +401,7 @@ def main_orchestrator(linkedin_url: str, github_username: str, cv_file_path: str
                os.path.exists(saved_github_json_path) and \
                os.path.exists(saved_cv_ocr_json_path):
                 try:
-                    latex_output = call_rag_api(linkedin_json_path, saved_github_json_path, saved_cv_ocr_json_path)
+                    latex_output = call_rag_api(linkedin_json_path, saved_github_json_path, saved_cv_ocr_json_path, job_description=job_description)
                     if latex_output:
                         # 5. Convert LaTeX to PDF
                         print("\n--- Calling LaTeX to PDF Service ---")
@@ -454,7 +455,8 @@ def parse_arguments():
     parser.add_argument("--output", "-o", type=str, help="Output directory for generated files (default: session directory in bucket)")
     parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive mode, prompting for missing information")
     parser.add_argument("--cv-only", action="store_true", help="Run only the CV OCR parsing functionality (skips LinkedIn and GitHub)")
-
+    parser.add_argument("--description", "-d", type=str, help="Job description to tailor the CV.")
+    
     return parser.parse_args()
 
 def interactive_mode():
@@ -501,6 +503,8 @@ def interactive_mode():
             return
 
 
+    job_description = input("Enter job description (optional): ").strip()
+
     output_dir_input = input("Enter output directory (or press Enter for default session directory): ").strip()
     output_dir = output_dir_input if output_dir_input else None
 
@@ -512,7 +516,8 @@ def interactive_mode():
         linkedin_url=linkedin_url,
         github_username=github_username,
         cv_file_path=cv_file_path,
-        output_dir=output_dir
+        output_dir=output_dir,
+        job_description=job_description
     )
 
 def cv_only_processor(cv_file_path: str, output_dir: str = None):
