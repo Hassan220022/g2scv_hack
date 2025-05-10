@@ -1,5 +1,7 @@
 import os
 import json
+import datetime
+import uuid
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -15,6 +17,16 @@ load_dotenv()
 APIFY_API_KEY = os.getenv("APIFY_WEB_API_KEY")
 if not APIFY_API_KEY:
     raise ValueError("APIFY_WEB_API_KEY environment variable is not set")
+
+# Set Apify Actor ID
+APIFY_ACTOR_ID = os.getenv("APIFY_ACTOR_ID")
+if not APIFY_ACTOR_ID:
+    raise ValueError("APIFY_ACTOR_ID environment variable is not set")
+
+# Set bucket directory path
+BUCKET_DIR = "/Users/mikawi/Developer/hackathon/g2scv_n/bucket"
+# Create bucket directory if it doesn't exist
+os.makedirs(BUCKET_DIR, exist_ok=True)
 
 # Initialize the ApifyClient
 apify_client = ApifyClient(APIFY_API_KEY)
@@ -102,26 +114,20 @@ def delete_apify_data(run_id: str, dataset_id: str):
         print(f"Error deleting Apify data: {str(e)}")
         return False
 
-@app.post("/scrape-linkedin", response_model=ScrapingResponse)
+@app.post("/scrape-linkedin", response_model=dict)
 async def scrape_linkedin_profile(request: LinkedInURLRequest):
     """
-    Scrape a LinkedIn profile and return the data along with Apify run and dataset IDs
-    
-    The client should call /confirm-data-receipt after successfully saving the data locally
+    Scrape a LinkedIn profile and save raw data directly to the bucket
     """
     try:
         # Prepare Actor input
         run_input = {
-            "urls": [
-                {"url": request.url}
-            ],
-            "findContacts": False,
-            "findContacts.contactCompassToken": ""
+            "profileUrls": [request.url]
         }
         
         # Run the LinkedIn scraper Actor
         print(f"Starting LinkedIn profile scraping for URL: {request.url}")
-        run = apify_client.actor("yZnhB5JewWf9xSmoM").call(run_input=run_input)
+        run = apify_client.actor(APIFY_ACTOR_ID).call(run_input=run_input)
         
         if not run or "defaultDatasetId" not in run:
             raise HTTPException(status_code=500, detail="Failed to get results from LinkedIn scraper")
@@ -132,64 +138,40 @@ async def scrape_linkedin_profile(request: LinkedInURLRequest):
         
         print(f"Scraping complete. Fetching data from dataset: {dataset_id}")
         
-        # Get all items from the dataset
-        items = []
+        # Get all raw items from the dataset
+        raw_data = []
         for item in apify_client.dataset(dataset_id).iterate_items():
-            items.append(item)
+            raw_data.append(item)
         
         # If no items were found, return an error
-        if not items:
+        if not raw_data:
             raise HTTPException(status_code=404, detail="No LinkedIn profile data found for the provided URL")
-            
-        # Format the data as required
-        formatted_items = []
-        for item in items:
-            profile = item.get("profile", {})
-            formatted_item = {
-                "id": profile.get("entityUrn", "").split(":")[-1] if profile.get("entityUrn") else None,
-                "profileId": profile.get("profileId", None),
-                "firstName": profile.get("firstName", None),
-                "lastName": profile.get("lastName", None),
-                "occupation": profile.get("headline", None),
-                "publicIdentifier": profile.get("publicIdentifier", None),
-                "trackingId": profile.get("trackingId", None),
-                "pictureUrl": profile.get("displayPictureUrl", None),
-                "coverImageUrl": profile.get("backgroundPictureUrl", None),
-                "countryCode": profile.get("locationCode", None),
-                "geoUrn": profile.get("geoUrn", None),
-                "positions": item.get("positions", []),
-                "educations": item.get("educations", []),
-                "certifications": item.get("certifications", []),
-                "courses": item.get("courses", []),
-                "honors": item.get("honors", []),
-                "languages": item.get("languages", []),
-                "skills": item.get("skills", []),
-                "volunteerExperiences": item.get("volunteerExperiences", []),
-                "headline": profile.get("headline", None),
-                "summary": profile.get("summary", None),
-                "student": profile.get("student", False),
-                "industryName": profile.get("industry", None),
-                "industryUrn": profile.get("industryUrn", None),
-                "geoLocationName": profile.get("locationName", None),
-                "geoCountryName": profile.get("locationCountry", None),
-                "jobTitle": item.get("currentJobTitle", None),
-                "companyName": item.get("currentCompanyName", None),
-                "companyPublicId": profile.get("companyPublicId", None),
-                "companyLinkedinUrl": profile.get("companyUrl", None),
-                "following": profile.get("following", None),
-                "followable": profile.get("followable", None),
-                "followersCount": profile.get("followersCount", None),
-                "connectionsCount": profile.get("connectionsCount", None),
-                "connectionType": profile.get("connectionType", None),
-                "inputUrl": request.url
-            }
-            formatted_items.append(formatted_item)
         
-        # Return both data and IDs needed for confirmation and deletion
+        # Extract profile identifier from the URL
+        profile_id = request.url.split("/")[-1].split("?")[0]
+        
+        # Generate a unique filename with timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"linkedin_profile_{profile_id}_{timestamp}.json"
+        file_path = os.path.join(BUCKET_DIR, filename)
+        
+        # Save raw LinkedIn data exactly as received - no parsing
+        # The example data shows the expected format is a direct JSON array
+        
+        # Save raw data to file
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(raw_data, f, indent=2, ensure_ascii=False)
+            
+        print(f"LinkedIn profile data saved to {file_path}")
+            
+        # Return basic info about the saved data
         return {
-            "data": formatted_items,
+            "success": True,
+            "message": "LinkedIn data saved successfully",
             "run_id": run_id,
-            "dataset_id": dataset_id
+            "dataset_id": dataset_id,
+            "saved_to": file_path,
+            "item_count": len(raw_data)
         }
         
     except Exception as e:
