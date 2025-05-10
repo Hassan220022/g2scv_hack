@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 from apify_client import ApifyClient
-from ../utils import save_json_to_file
+from utils import save_json_to_file
 
 # Load environment variables
 load_dotenv()
@@ -152,28 +152,29 @@ async def scrape_linkedin_profile(request: LinkedInURLRequest):
         profile_id = request.url.split("/")[-1].split("?")[0]
         
         # Generate a unique filename with timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"linkedin_profile_{profile_id}_{timestamp}.json"
-        file_path = os.path.join(BUCKET_DIR, filename)
+        # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        # filename = f"linkedin_profile_{profile_id}_{timestamp}.json"
+        # file_path = os.path.join(BUCKET_DIR, filename)
         
         # Save raw LinkedIn data exactly as received - no parsing
         # The example data shows the expected format is a direct JSON array
         
         # Save raw data to file
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(raw_data, f, indent=2, ensure_ascii=False)
+        # save_json_to_file() should be called here
+        # with open(file_path, "w", encoding="utf-8") as f:
+        #     json.dump(raw_data, f, indent=2, ensure_ascii=False)
             
-        print(f"LinkedIn profile data saved to {file_path}")
+        # print(f"LinkedIn profile data saved to {file_path}")
             
         # Return basic info about the saved data
-        return {
-            "success": True,
-            "message": "LinkedIn data saved successfully",
-            "run_id": run_id,
-            "dataset_id": dataset_id,
-            "saved_to": file_path,
-            "item_count": len(raw_data)
-        }
+        # return {
+        #     "success": True,
+        #     "message": "LinkedIn data saved successfully",
+        #     "run_id": run_id,
+        #     "dataset_id": dataset_id,
+        #     "saved_to": file_path,
+        #     "item_count": len(raw_data)
+        # }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error scraping LinkedIn profile: {str(e)}")
